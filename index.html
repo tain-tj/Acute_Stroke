@@ -44,10 +44,7 @@
                 <div class="card-header"><i class="fa-solid fa-user-injured me-2"></i>ข้อมูลผู้ป่วย</div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-12 col-md-6">
-                            <label class="form-label">ชื่อ-สกุลผู้ป่วย</label>
-                            <input type="text" class="form-control" name="patientName" required>
-                        </div>
+                        <!-- นำชื่อและ ID ออก จัดเรียง 4 ช่องให้อยู่แถวเดียวกันบน Desktop / สองแถวบนมือถือ -->
                         <div class="col-6 col-md-3">
                             <label class="form-label">HN</label>
                             <input type="text" class="form-control" name="hn" required>
@@ -55,10 +52,6 @@
                         <div class="col-6 col-md-3">
                             <label class="form-label">อายุ</label>
                             <input type="number" class="form-control" name="age">
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label">ID/Passport No.</label>
-                            <input type="text" class="form-control" name="idCard">
                         </div>
                         <div class="col-6 col-md-3">
                             <label class="form-label">เพศ</label>
@@ -309,8 +302,7 @@
             document.getElementById('consentNo').style.display = (this.value === 'No') ? 'block' : 'none';
         });
 
-        // --- 2. ระบบคำนวณ Time Target (Real-time) ---
-        // ฟังก์ชันคำนวณหาผลต่างนาที (รองรับกรณีข้ามวัน/หลังเที่ยงคืน)
+        // --- 2. ระบบคำนวณ Time Target ---
         function getTimeDiffMinutes(startStr, endStr) {
             if (!startStr || !endStr) return null;
             let [sH, sM] = startStr.split(':').map(Number);
@@ -320,7 +312,6 @@
             return diff;
         }
 
-        // ฟังก์ชันอัปเดตหน้าจอเป้าหมายเวลา
         function updateTargetDisplay(elementId, diff, targetMins) {
             let el = document.getElementById(elementId);
             if (diff === null) {
@@ -329,53 +320,35 @@
             } else {
                 el.innerText = diff + ' min';
                 if (diff > targetMins) {
-                    el.className = 'fw-bold text-danger'; // สีแดงเมื่อเกินเป้า
+                    el.className = 'fw-bold text-danger';
                 } else {
-                    el.className = 'fw-bold text-success'; // สีเขียวเมื่ออยู่ในเกณฑ์
+                    el.className = 'fw-bold text-success';
                 }
             }
         }
 
-        // ประมวลผลเมื่อเวลาเปลี่ยน
         function calculateTargets() {
             let form = document.getElementById('strokeForm');
             let triage = form.triageTime.value;
             
-            // Door to doctor (หาค่ามากสุดระหว่าง แพทย์ ER, แพทย์เวร, แพทย์อื่นๆ ลบ Triage)
+            // Door to doctor
             let drDiffs = [];
             if(form.drErTime.value) drDiffs.push(getTimeDiffMinutes(triage, form.drErTime.value));
             if(form.drWardTime.value) drDiffs.push(getTimeDiffMinutes(triage, form.drWardTime.value));
             if(form.drOtherTime.value) drDiffs.push(getTimeDiffMinutes(triage, form.drOtherTime.value));
-            
-            let maxDrDiff = null;
-            if (drDiffs.length > 0 && triage) {
-                maxDrDiff = Math.max(...drDiffs.filter(d => d !== null));
-            }
+            let maxDrDiff = (drDiffs.length > 0 && triage) ? Math.max(...drDiffs.filter(d => d !== null)) : null;
             updateTargetDisplay('tt-door-doc', maxDrDiff, 10);
 
-            // Door to CT image (Image complete - ติดต่อ)
+            // อื่นๆ
             updateTargetDisplay('tt-door-ct', getTimeDiffMinutes(form.ctContactTime.value, form.ctCompleteTime.value), 25);
-            
-            // Door to CT read (Read - Image complete)
             updateTargetDisplay('tt-door-ct-read', getTimeDiffMinutes(form.ctCompleteTime.value, form.ctReadTime.value), 45);
-            
-            // Door to rt-PA (Start rt-PA - Triage)
             updateTargetDisplay('tt-door-rtpa', getTimeDiffMinutes(triage, form.rtpaStartTime.value), 60);
-            
-            // Door mechanical thrombectomy (Thrombectomy - Triage)
             updateTargetDisplay('tt-door-thromb', getTimeDiffMinutes(triage, form.thrombectomyTime.value), 90);
-            
-            // Access to Neuro Med (Consult Neuro Med - Triage)
             updateTargetDisplay('tt-access-neuro', getTimeDiffMinutes(triage, form.consultNeuroMedTime.value), 15);
-            
-            // Access Neuro Surg (Consult Neuro Sx - Triage)
             updateTargetDisplay('tt-access-surg', getTimeDiffMinutes(triage, form.consultNeuroSxTime.value), 120);
-            
-            // Admit to monitor (Admit ICU - Triage)
             updateTargetDisplay('tt-admit', getTimeDiffMinutes(triage, form.admitIcuTime.value), 180);
         }
 
-        // ดักจับเหตุการณ์กรอกเวลาทุกช่องที่มีคลาส time-calc ให้ทำการคำนวณใหม่
         document.querySelectorAll('.time-calc').forEach(input => {
             input.addEventListener('change', calculateTargets);
         });
@@ -391,7 +364,7 @@
 
             Swal.fire({
                 title: 'ยืนยันการบันทึกข้อมูล?',
-                text: "โปรดตรวจสอบความถูกต้อง",
+                text: "โปรดตรวจสอบความถูกต้อง (ข้อมูลสถิติเวลาจะถูกบันทึกด้วย)",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#003366',
@@ -408,15 +381,33 @@
                         didOpen: () => { Swal.showLoading(); }
                     });
 
+                    // สร้างชุดข้อมูลพื้นฐานจากฟอร์ม
                     let formData = new FormData(formObj);
                     let dataObj = {};
                     formData.forEach((value, key) => {
                         if(!dataObj.hasOwnProperty(key)) {
                             dataObj[key] = value;
                         } else {
-                            dataObj[key] += `, ${value}`; // สำหรับ checkbox
+                            dataObj[key] += `, ${value}`; // จัดการ checkbox ที่เลือกหลายอัน
                         }
                     });
+
+                    // === ส่วนที่เพิ่ม: คำนวณและแนบข้อมูลสถิติ Time Target ส่งไปด้วย ===
+                    let triage = formObj.triageTime.value;
+                    let drDiffs = [];
+                    if(formObj.drErTime.value) drDiffs.push(getTimeDiffMinutes(triage, formObj.drErTime.value));
+                    if(formObj.drWardTime.value) drDiffs.push(getTimeDiffMinutes(triage, formObj.drWardTime.value));
+                    if(formObj.drOtherTime.value) drDiffs.push(getTimeDiffMinutes(triage, formObj.drOtherTime.value));
+                    
+                    dataObj['stat_DoorToDoctor_min'] = (drDiffs.length > 0 && triage) ? Math.max(...drDiffs.filter(d => d !== null)) : "";
+                    dataObj['stat_DoorToCT_min'] = getTimeDiffMinutes(formObj.ctContactTime.value, formObj.ctCompleteTime.value) ?? "";
+                    dataObj['stat_DoorToCTRead_min'] = getTimeDiffMinutes(formObj.ctCompleteTime.value, formObj.ctReadTime.value) ?? "";
+                    dataObj['stat_DoorToRtPA_min'] = getTimeDiffMinutes(triage, formObj.rtpaStartTime.value) ?? "";
+                    dataObj['stat_DoorToThrombectomy_min'] = getTimeDiffMinutes(triage, formObj.thrombectomyTime.value) ?? "";
+                    dataObj['stat_AccessNeuroMed_min'] = getTimeDiffMinutes(triage, formObj.consultNeuroMedTime.value) ?? "";
+                    dataObj['stat_AccessNeuroSurg_min'] = getTimeDiffMinutes(triage, formObj.consultNeuroSxTime.value) ?? "";
+                    dataObj['stat_AdmitToMonitor_min'] = getTimeDiffMinutes(triage, formObj.admitIcuTime.value) ?? "";
+                    // ========================================================
 
                     fetch(scriptURL, { 
                         method: 'POST', 
@@ -433,7 +424,7 @@
                             }).then(() => {
                                 formObj.reset();
                                 document.getElementById('hypoSection').style.display = 'none';
-                                calculateTargets(); // ล้าง Time Target
+                                calculateTargets(); // ล้างหน้าจอ Time Target เป็นค่าว่าง
                                 window.scrollTo(0, 0);
                             });
                         } else {
