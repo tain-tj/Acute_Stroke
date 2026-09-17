@@ -44,16 +44,15 @@
                 <div class="card-header"><i class="fa-solid fa-user-injured me-2"></i>ข้อมูลผู้ป่วย</div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <!-- นำชื่อและ ID ออก จัดเรียง 4 ช่องให้อยู่แถวเดียวกันบน Desktop / สองแถวบนมือถือ -->
-                        <div class="col-6 col-md-3">
+                        <div class="col-6 col-md-2">
                             <label class="form-label">HN</label>
                             <input type="text" class="form-control" name="hn" required>
                         </div>
-                        <div class="col-6 col-md-3">
+                        <div class="col-6 col-md-2">
                             <label class="form-label">อายุ</label>
                             <input type="number" class="form-control" name="age">
                         </div>
-                        <div class="col-6 col-md-3">
+                        <div class="col-6 col-md-2">
                             <label class="form-label">เพศ</label>
                             <select class="form-select" name="gender">
                                 <option value="">เลือก</option>
@@ -62,6 +61,23 @@
                             </select>
                         </div>
                         <div class="col-6 col-md-3">
+                            <label class="form-label text-primary">แผนกที่ติดต่อ</label>
+                            <select class="form-select border-primary" name="department" required>
+                                <option value="">เลือกแผนก...</option>
+                                <option value="ER">ER</option>
+                                <option value="OPD.MED">OPD.MED</option>
+                                <option value="OPD.Cardio&DM">OPD.Cardio&DM</option>
+                                <option value="ENT">ENT</option>
+                                <option value="PE">PE</option>
+                                <option value="HD">HD</option>
+                                <option value="OPD.SUR">OPD.SUR</option>
+                                <option value="OPD.Ortho">OPD.Ortho</option>
+                                <option value="OPD.OB">OPD.OB</option>
+                                <option value="OPD.PED">OPD.PED</option>
+                                <option value="Skin">Skin</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3">
                             <label class="form-label">วันเดือนปีที่ประเมิน</label>
                             <input type="datetime-local" class="form-control" name="evalDateTime" required>
                         </div>
@@ -355,7 +371,6 @@
 
 
         // --- 3. ส่วนจัดการ Submit Form (ส่งเข้า Apps Script) ---
-        // ⚠️ นำ URL ของ Web App จาก Google Apps Script มาใส่ที่นี่ ⚠️
         const scriptURL = 'https://script.google.com/macros/s/AKfycbzAlkB8AkbDA705JKKZYHoPcIE9PgKqvPlEqlGKbh-5h7g2VGtKpDubER60WscggOxFTQ/exec';
         
         document.getElementById('strokeForm').addEventListener('submit', e => {
